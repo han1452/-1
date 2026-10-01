@@ -1,0 +1,2101 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+<title>故宮 日本語ガイドゲーム</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+}
+
+body {
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Noto Sans JP",
+        "Hiragino Kaku Gothic ProN",
+        "Yu Gothic",
+        Meiryo,
+        sans-serif;
+
+    background:
+        radial-gradient(circle at top, #713a27, #201519 45%, #080b10);
+
+    color: white;
+}
+
+#app {
+    width: 100%;
+    max-width: 520px;
+    min-height: 100vh;
+    margin: auto;
+
+    background:
+        linear-gradient(
+            180deg,
+            #43231e 0%,
+            #16151b 55%,
+            #090c12 100%
+        );
+
+    overflow: hidden;
+    position: relative;
+}
+
+/* =========================
+   畫面
+========================= */
+
+.screen {
+    display: none;
+    min-height: 100vh;
+    padding: 20px 18px 30px;
+}
+
+.screen.active {
+    display: flex;
+    flex-direction: column;
+}
+
+/* =========================
+   開始畫面
+========================= */
+
+#startScreen {
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.logo {
+    width: 120px;
+    height: 120px;
+
+    border-radius: 50%;
+
+    border: 3px solid #e7bd5d;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 58px;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(255,216,110,.2),
+            rgba(255,216,110,.02)
+        );
+
+    box-shadow:
+        0 0 40px rgba(245,194,75,.25);
+
+    animation: floating 3s ease-in-out infinite;
+}
+
+@keyframes floating {
+    0%, 100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-8px);
+    }
+}
+
+.title {
+    font-size: 34px;
+    letter-spacing: 6px;
+    color: #ffe09a;
+    margin-top: 20px;
+}
+
+.subtitle {
+    font-size: 18px;
+    color: #e0e5ed;
+    margin-bottom: 25px;
+}
+
+.intro {
+    width: 100%;
+
+    padding: 20px;
+
+    border-radius: 22px;
+
+    background: rgba(255,255,255,.06);
+
+    border: 1px solid rgba(255,215,130,.18);
+
+    line-height: 1.9;
+}
+
+.gold {
+    color: #ffd86d;
+}
+
+.start-btn,
+.restart-btn {
+    width: 100%;
+    min-height: 64px;
+
+    margin-top: 22px;
+
+    border: none;
+    border-radius: 18px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #ffe492,
+            #c89234
+        );
+
+    color: #2b1c08;
+
+    font-size: 20px;
+    font-weight: bold;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 10px 25px rgba(0,0,0,.3);
+
+    transition: transform .15s;
+}
+
+.start-btn:active,
+.restart-btn:active {
+    transform: scale(.96);
+}
+
+.note {
+    margin-top: 13px;
+    color: #8f9aab;
+    font-size: 12px;
+}
+
+/* =========================
+   遊戲畫面
+========================= */
+
+#gameScreen {
+    padding-top: 14px;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.progress-area {
+    flex: 1;
+}
+
+.progress-text {
+    font-size: 13px;
+    color: #adb7c7;
+    margin-bottom: 6px;
+}
+
+.progress-bg {
+    width: 100%;
+    height: 8px;
+
+    background: #333a49;
+
+    border-radius: 20px;
+
+    overflow: hidden;
+}
+
+.progress-fill {
+    width: 0%;
+    height: 100%;
+
+    background:
+        linear-gradient(
+            90deg,
+            #d39c35,
+            #ffe28c
+        );
+
+    transition: width .4s;
+}
+
+.score {
+    min-width: 78px;
+
+    padding: 9px 8px;
+
+    border-radius: 14px;
+
+    text-align: center;
+
+    color: #ffd76b;
+
+    background: rgba(255,205,82,.1);
+
+    border: 1px solid rgba(255,205,82,.25);
+
+    font-weight: bold;
+}
+
+.life-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    color: #aeb7c7;
+
+    font-size: 13px;
+
+    margin-bottom: 12px;
+}
+
+.hearts {
+    font-size: 18px;
+    letter-spacing: 3px;
+}
+
+/* =========================
+   故宮場景
+========================= */
+
+.scene {
+    height: 190px;
+
+    position: relative;
+
+    overflow: hidden;
+
+    border-radius: 22px;
+
+    margin-bottom: 15px;
+
+    box-shadow:
+        0 12px 30px rgba(0,0,0,.4);
+
+    background:
+        linear-gradient(
+            180deg,
+            #e2bd6a,
+            #9e4030 50%,
+            #301819
+        );
+}
+
+.sky {
+    position: absolute;
+    inset: 0;
+
+    background:
+        radial-gradient(
+            circle at 78% 23%,
+            rgba(255,239,160,.8) 0 7%,
+            transparent 8%
+        );
+}
+
+.mountain {
+    position: absolute;
+
+    bottom: 0;
+    left: 0;
+
+    width: 100%;
+    height: 75px;
+
+    background:
+        linear-gradient(
+            135deg,
+            transparent 20%,
+            #4d3029 21% 40%,
+            transparent 41% 50%,
+            #32201f 51% 70%,
+            transparent 71%
+        );
+}
+
+.palace {
+    position: absolute;
+
+    left: 12%;
+    right: 12%;
+    bottom: 28px;
+
+    height: 70px;
+
+    background: #9d3027;
+
+    border-top: 8px solid #e5b849;
+
+    box-shadow:
+        0 9px 0 #60201d;
+}
+
+.roof {
+    position: absolute;
+
+    left: -9%;
+    top: -38px;
+
+    width: 118%;
+    height: 42px;
+
+    background: #d9a842;
+
+    clip-path:
+        polygon(
+            0 70%,
+            7% 50%,
+            50% 0,
+            93% 50%,
+            100% 70%,
+            92% 82%,
+            50% 28%,
+            8% 82%
+        );
+}
+
+.door {
+    position: absolute;
+
+    bottom: 0;
+
+    width: 26px;
+    height: 44px;
+
+    background: #501916;
+
+    border: 2px solid #d7a541;
+    border-bottom: none;
+}
+
+.door1 {
+    left: 25%;
+}
+
+.door2 {
+    left: 44%;
+}
+
+.door3 {
+    left: 63%;
+}
+
+.scene-label {
+    position: absolute;
+
+    top: 12px;
+    left: 13px;
+
+    padding: 6px 10px;
+
+    background: rgba(0,0,0,.3);
+
+    border-radius: 9px;
+
+    font-size: 12px;
+}
+
+/* =========================
+   問題
+========================= */
+
+.question-card {
+    padding: 18px;
+
+    border-radius: 20px;
+
+    background: rgba(255,255,255,.055);
+
+    border: 1px solid rgba(255,255,255,.09);
+
+    margin-bottom: 13px;
+}
+
+.tag {
+    display: inline-block;
+
+    padding: 5px 9px;
+
+    border-radius: 8px;
+
+    color: #ffd86b;
+
+    background: rgba(246,196,79,.1);
+
+    font-size: 12px;
+
+    margin-bottom: 10px;
+}
+
+.question {
+    margin: 0;
+
+    font-size: 20px;
+
+    line-height: 1.65;
+
+    font-weight: bold;
+}
+
+.hint {
+    margin-top: 9px;
+
+    color: #9da8ba;
+
+    font-size: 13px;
+
+    line-height: 1.6;
+}
+
+/* =========================
+   答案按鈕
+========================= */
+
+.options {
+    display: grid;
+    gap: 10px;
+}
+
+.option {
+    width: 100%;
+
+    min-height: 60px;
+
+    padding: 12px 15px;
+
+    border-radius: 16px;
+
+    border: 1px solid #3b4659;
+
+    background: #202a3a;
+
+    color: #f4f6fa;
+
+    font-size: 17px;
+
+    text-align: left;
+
+    line-height: 1.4;
+
+    cursor: pointer;
+
+    transition: .2s;
+}
+
+.option:active {
+    transform: scale(.98);
+}
+
+.option.correct {
+    background: #155943;
+    border-color: #4ed7a5;
+}
+
+.option.wrong {
+    background: #702b37;
+    border-color: #f27b88;
+
+    animation: shake .35s;
+}
+
+.option.disabled {
+    pointer-events: none;
+}
+
+@keyframes shake {
+
+    0%, 100% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-7px);
+    }
+
+    75% {
+        transform: translateX(7px);
+    }
+}
+
+/* =========================
+   回饋
+========================= */
+
+.feedback {
+    display: none;
+
+    margin-top: 12px;
+
+    padding: 14px;
+
+    border-radius: 15px;
+
+    line-height: 1.7;
+
+    font-size: 15px;
+}
+
+.feedback.show {
+    display: block;
+}
+
+.feedback.good {
+    color: #baf6df;
+
+    background: rgba(35,180,130,.13);
+
+    border: 1px solid rgba(70,220,170,.25);
+}
+
+.feedback.bad {
+    color: #ffc5cc;
+
+    background: rgba(225,70,92,.13);
+
+    border: 1px solid rgba(242,100,120,.25);
+}
+
+.next-btn {
+    display: none;
+
+    width: 100%;
+
+    min-height: 58px;
+
+    margin-top: 12px;
+
+    border: none;
+
+    border-radius: 17px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #ffe18b,
+            #c99335
+        );
+
+    color: #271a08;
+
+    font-size: 18px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+}
+
+.next-btn.show {
+    display: block;
+}
+
+.memo {
+    margin-top: 14px;
+
+    padding: 13px 15px;
+
+    border-radius: 16px;
+
+    background: rgba(255,255,255,.035);
+
+    color: #9da8b9;
+
+    font-size: 13px;
+
+    line-height: 1.7;
+}
+
+/* =========================
+   結束畫面
+========================= */
+
+#endScreen {
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.trophy {
+    font-size: 72px;
+
+    animation: floating 2.5s infinite;
+}
+
+.end-title {
+    color: #ffe09a;
+
+    font-size: 30px;
+
+    margin: 12px 0 5px;
+}
+
+.result-card {
+    width: 100%;
+
+    padding: 23px;
+
+    margin: 18px 0;
+
+    border-radius: 23px;
+
+    background: rgba(255,255,255,.055);
+
+    border: 1px solid rgba(255,215,130,.18);
+}
+
+.result-label {
+    color: #aeb8c8;
+
+    font-size: 14px;
+}
+
+.final-score {
+    color: #ffd766;
+
+    font-size: 58px;
+
+    font-weight: bold;
+
+    margin: 4px 0;
+}
+
+.result-message {
+    font-size: 16px;
+
+    line-height: 1.8;
+
+    color: #e5e9f1;
+}
+
+.review {
+    width: 100%;
+
+    padding: 15px;
+
+    border-radius: 18px;
+
+    background: rgba(255,255,255,.04);
+
+    text-align: left;
+}
+
+.review-title {
+    color: #ffd66b;
+
+    font-weight: bold;
+
+    margin-bottom: 8px;
+}
+
+.review-item {
+    padding: 9px 0;
+
+    border-bottom:
+        1px solid rgba(255,255,255,.08);
+
+    font-size: 13px;
+
+    line-height: 1.6;
+}
+
+.review-item:last-child {
+    border-bottom: none;
+}
+
+/* =========================
+   粒子
+========================= */
+
+.particle {
+    position: fixed;
+
+    width: 6px;
+    height: 6px;
+
+    border-radius: 50%;
+
+    background: #ffd45f;
+
+    pointer-events: none;
+
+    z-index: 999;
+
+    animation:
+        particleFly .9s ease-out forwards;
+}
+
+@keyframes particleFly {
+
+    from {
+        transform:
+            translate(0,0)
+            scale(1);
+
+        opacity: 1;
+    }
+
+    to {
+        transform:
+            translate(var(--x),var(--y))
+            scale(0);
+
+        opacity: 0;
+    }
+}
+
+@media (min-width: 600px) {
+
+    body {
+        padding: 20px 0;
+    }
+
+    #app {
+        min-height: calc(100vh - 40px);
+
+        border-radius: 28px;
+
+        box-shadow:
+            0 25px 70px rgba(0,0,0,.55);
+    }
+
+    .screen {
+        min-height: calc(100vh - 40px);
+    }
+}
+</style>
+</head>
+
+
+<body>
+
+<div id="app">
+
+<!-- =====================================================
+     開始畫面
+====================================================== -->
+
+<section
+    id="startScreen"
+    class="screen active"
+>
+
+    <div class="logo">
+        🏯
+    </div>
+
+    <div class="title">
+        故宮
+    </div>
+
+    <div class="subtitle">
+        日本語ガイド・ゲーム
+    </div>
+
+    <div class="intro">
+
+        <div class="gold">
+            🎒 日本語ガイドになろう！
+        </div>
+
+        <br>
+
+        あなたは台湾を訪れた
+        日本人観光客のガイドです。
+
+        <br><br>
+
+        故宮博物院、台湾文化、
+        台北101などについて学びながら、
+        日本語クイズに挑戦しましょう！
+
+        <br><br>
+
+        ⭐ 正解すると10ポイント
+
+        <br>
+
+        ❤️ まちがえるとライフが1つ減ります。
+
+        <br><br>
+
+        <span class="gold">
+            全8問をクリアしましょう！
+        </span>
+
+    </div>
+
+    <button
+        class="start-btn"
+        onclick="startGame()"
+    >
+        ▶ ゲームを始める
+    </button>
+
+    <div class="note">
+        🔊 タップするとゲーム音が再生されます
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     遊戲畫面
+====================================================== -->
+
+<section
+    id="gameScreen"
+    class="screen"
+>
+
+    <div class="header">
+
+        <div class="progress-area">
+
+            <div class="progress-text">
+                ガイドクエスト
+                <span id="currentNumber">1</span>
+                / 8
+            </div>
+
+            <div class="progress-bg">
+
+                <div
+                    id="progress"
+                    class="progress-fill"
+                ></div>
+
+            </div>
+
+        </div>
+
+        <div class="score">
+            ⭐ <span id="score">0</span>
+        </div>
+
+    </div>
+
+
+    <div class="life-row">
+
+        <span>
+            ガイドライフ
+        </span>
+
+        <span
+            id="hearts"
+            class="hearts"
+        >
+            ❤️❤️❤️
+        </span>
+
+    </div>
+
+
+    <!-- 故宮視覺 -->
+    <div class="scene">
+
+        <div class="sky"></div>
+
+        <div class="mountain"></div>
+
+        <div class="scene-label">
+            🇹🇼 TAIWAN • NATIONAL PALACE MUSEUM
+        </div>
+
+        <div class="palace">
+
+            <div class="roof"></div>
+
+            <div class="door door1"></div>
+
+            <div class="door door2"></div>
+
+            <div class="door door3"></div>
+
+        </div>
+
+    </div>
+
+
+    <!-- 問題 -->
+    <div class="question-card">
+
+        <div
+            id="tag"
+            class="tag"
+        >
+            📚 日本語クイズ
+        </div>
+
+        <p
+            id="question"
+            class="question"
+        ></p>
+
+        <div
+            id="hint"
+            class="hint"
+        ></div>
+
+    </div>
+
+
+    <!-- 選項 -->
+    <div
+        id="options"
+        class="options"
+    ></div>
+
+
+    <!-- 回饋 -->
+    <div
+        id="feedback"
+        class="feedback"
+    ></div>
+
+
+    <!-- 下一題 -->
+    <button
+        id="nextBtn"
+        class="next-btn"
+        onclick="nextQuestion()"
+    >
+        次の問題へ →
+    </button>
+
+
+    <div class="memo">
+
+        💡
+        <strong>ガイドメモ：</strong>
+
+        <span id="memoText">
+            台湾の文化を日本語で紹介してみましょう。
+        </span>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     結束畫面
+====================================================== -->
+
+<section
+    id="endScreen"
+    class="screen"
+>
+
+    <div class="trophy">
+        🏆
+    </div>
+
+    <h1 class="end-title">
+        ゲーム終了！
+    </h1>
+
+    <div class="result-card">
+
+        <div class="result-label">
+            あなたのスコア
+        </div>
+
+        <div class="final-score">
+            <span id="finalScore">0</span>
+        </div>
+
+        <div class="result-label">
+            / 80 POINTS
+        </div>
+
+    </div>
+
+
+    <div
+        id="resultMessage"
+        class="result-message"
+    ></div>
+
+    <br>
+
+
+    <div class="review">
+
+        <div class="review-title">
+            📖 復習ノート
+        </div>
+
+        <div id="reviewList"></div>
+
+    </div>
+
+
+    <button
+        class="restart-btn"
+        onclick="startGame()"
+    >
+        🔄 もう一度遊ぶ
+    </button>
+
+</section>
+
+</div>
+
+
+<script>
+
+/* =========================================================
+   題目資料
+========================================================= */
+
+const questionData = [
+
+    {
+        tag: "🏯 故宮ガイド",
+
+        question:
+            "故宮博物院は、どの都市にありますか？",
+
+        hint:
+            "台湾の首都を思い出してください。",
+
+        options: [
+            "高雄市",
+            "台北市",
+            "台南市",
+            "台中市"
+        ],
+
+        answer: 1,
+
+        explanation:
+            "正解は「台北市」です。故宮博物院は台北市にあります。",
+
+        memo:
+            "「〜にあります」は場所を説明するときに使います。"
+    },
+
+
+    {
+        tag: "📚 日本語単語",
+
+        question:
+            "「文化財」の意味として、一番近いものはどれですか？",
+
+        hint:
+            "歴史や文化に関係する大切なものです。",
+
+        options: [
+            "旅行で使うスーツケース",
+            "レストランのメニュー",
+            "歴史や文化に関係する大切なもの",
+            "毎日使う電車の切符"
+        ],
+
+        answer: 2,
+
+        explanation:
+            "「文化財」は歴史・芸術・文化などに関係する大切なものです。",
+
+        memo:
+            "文化財（ぶんかざい）＝ cultural heritage。"
+    },
+
+
+    {
+        tag: "🗣️ ガイド会話",
+
+        question:
+            "観光客に「ここは何ですか？」と聞かれました。どの答えが自然ですか？",
+
+        hint:
+            "「これは〜です。」という形を使います。",
+
+        options: [
+            "これは故宮博物院です。",
+            "これは歩きます。",
+            "これは食べました。",
+            "これは行きませんか。"
+        ],
+
+        answer: 0,
+
+        explanation:
+            "場所や物を紹介するときは「これは〜です。」が使えます。",
+
+        memo:
+            "「これは〜です」は初心者に便利な紹介表現です。"
+    },
+
+
+    {
+        tag: "🏺 展示品クイズ",
+
+        question:
+            "博物館で、作品や資料を見せることを何と言いますか？",
+
+        hint:
+            "「展」という漢字が入っています。",
+
+        options: [
+            "予約する",
+            "料理する",
+            "出発する",
+            "展示する"
+        ],
+
+        answer: 3,
+
+        explanation:
+            "「展示する」は作品や資料などを人に見せるために並べることです。",
+
+        memo:
+            "展示（てんじ）＝ exhibition / display。"
+    },
+
+
+    {
+        tag: "🌏 台湾文化",
+
+        question:
+            "「歴史」という日本語の読み方はどれですか？",
+
+        hint:
+            "「れ」から始まります。",
+
+        options: [
+            "れいし",
+            "れきし",
+            "りきし",
+            "れきじ"
+        ],
+
+        answer: 1,
+
+        explanation:
+            "「歴史」は「れきし」と読みます。",
+
+        memo:
+            "歴史（れきし）＝ history。"
+    },
+
+
+    {
+        tag: "🏙️ 台北101",
+
+        question:
+            "台北101を紹介するとき、建物の高さを表す単位は？",
+
+        hint:
+            "建物の高さによく使う単位です。",
+
+        options: [
+            "リットル",
+            "キログラム",
+            "メートル",
+            "センチグラム"
+        ],
+
+        answer: 2,
+
+        explanation:
+            "建物の高さは「メートル」で表します。",
+
+        memo:
+            "高さ（たかさ）＝ height。"
+    },
+
+
+    {
+        tag: "📸 旅行日本語",
+
+        question:
+            "故宮で写真を撮りたいとき、スタッフに何と言いますか？",
+
+        hint:
+            "「〜てもいいですか？」は許可を求める表現です。",
+
+        options: [
+            "写真を買いませんか？",
+            "写真が走っています。",
+            "写真を食べてもいいですか？",
+            "写真を撮ってもいいですか？"
+        ],
+
+        answer: 3,
+
+        explanation:
+            "「〜てもいいですか？」は許可を求めるときに使います。",
+
+        memo:
+            "「写真を撮ってもいいですか？」は旅行で便利な表現です。"
+    },
+
+
+    {
+        tag: "🎫 観光マナー",
+
+        question:
+            "博物館で展示品を見るとき、ガイドとして一番自然な案内は？",
+
+        hint:
+            "静かに見てもらうための丁寧な表現です。",
+
+        options: [
+            "展示室を走ってください。",
+            "こちらでゆっくりご覧ください。",
+            "展示品に触ってください。",
+            "ここで大きな声を出してください。"
+        ],
+
+        answer: 1,
+
+        explanation:
+            "「ご覧ください」は「見てください」の丁寧な表現です。",
+
+        memo:
+            "ご覧ください＝見てください。丁寧なガイド表現です。"
+    }
+
+];
+
+
+/* =========================================================
+   遊戲狀態
+========================================================= */
+
+let currentQuestion = 0;
+
+let score = 0;
+
+let lives = 3;
+
+let answered = false;
+
+let mistakes = [];
+
+
+/* =========================================================
+   Fisher-Yates 洗牌
+   每次遊戲重新開始時，選項都會重新排列
+========================================================= */
+
+function shuffle(array) {
+
+    const arr = [...array];
+
+    for (
+        let i = arr.length - 1;
+        i > 0;
+        i--
+    ) {
+
+        const j =
+            Math.floor(
+                Math.random() * (i + 1)
+            );
+
+        [
+            arr[i],
+            arr[j]
+        ] =
+        [
+            arr[j],
+            arr[i]
+        ];
+    }
+
+    return arr;
+}
+
+
+/* =========================================================
+   開始遊戲
+========================================================= */
+
+function startGame() {
+
+    initAudio();
+
+    currentQuestion = 0;
+
+    score = 0;
+
+    lives = 3;
+
+    answered = false;
+
+    mistakes = [];
+
+
+    document.getElementById("score")
+        .textContent = "0";
+
+
+    updateLives();
+
+
+    /*
+       每次重新開始，
+       將每一題的答案選項重新洗牌。
+
+       answerText 會記錄真正答案，
+       所以洗牌後仍能正確判定。
+    */
+
+    questionData.forEach(question => {
+
+        question.shuffledOptions =
+            shuffle(
+                question.options
+            );
+
+        question.answerText =
+            question.options[
+                question.answer
+            ];
+
+    });
+
+
+    showScreen("gameScreen");
+
+    loadQuestion();
+}
+
+
+/* =========================================================
+   顯示畫面
+========================================================= */
+
+function showScreen(id) {
+
+    document
+        .querySelectorAll(".screen")
+        .forEach(screen => {
+
+            screen.classList.remove(
+                "active"
+            );
+
+        });
+
+
+    document
+        .getElementById(id)
+        .classList.add("active");
+
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+}
+
+
+/* =========================================================
+   載入題目
+========================================================= */
+
+function loadQuestion() {
+
+    answered = false;
+
+
+    const q =
+        questionData[currentQuestion];
+
+
+    document.getElementById(
+        "currentNumber"
+    ).textContent =
+        currentQuestion + 1;
+
+
+    document.getElementById(
+        "progress"
+    ).style.width =
+        (
+            currentQuestion /
+            questionData.length *
+            100
+        ) + "%";
+
+
+    document.getElementById(
+        "tag"
+    ).textContent =
+        q.tag;
+
+
+    document.getElementById(
+        "question"
+    ).textContent =
+        q.question;
+
+
+    document.getElementById(
+        "hint"
+    ).textContent =
+        q.hint;
+
+
+    document.getElementById(
+        "memoText"
+    ).textContent =
+        q.memo;
+
+
+    const optionsBox =
+        document.getElementById(
+            "options"
+        );
+
+
+    optionsBox.innerHTML = "";
+
+
+    /*
+       使用 shuffledOptions
+       顯示打亂後的答案。
+    */
+
+    q.shuffledOptions.forEach(
+        (optionText, index) => {
+
+            const button =
+                document.createElement(
+                    "button"
+                );
+
+
+            button.className =
+                "option";
+
+
+            button.textContent =
+                String.fromCharCode(
+                    65 + index
+                ) +
+                "　" +
+                optionText;
+
+
+            button.onclick =
+                function() {
+
+                    chooseAnswer(
+                        optionText,
+                        button
+                    );
+
+                };
+
+
+            optionsBox.appendChild(
+                button
+            );
+
+        }
+    );
+
+
+    document.getElementById(
+        "feedback"
+    ).className =
+        "feedback";
+
+
+    document.getElementById(
+        "feedback"
+    ).innerHTML = "";
+
+
+    const next =
+        document.getElementById(
+            "nextBtn"
+        );
+
+
+    next.classList.remove("show");
+
+
+    if (
+        currentQuestion ===
+        questionData.length - 1
+    ) {
+
+        next.textContent =
+            "結果を見る 🏆";
+
+    } else {
+
+        next.textContent =
+            "次の問題へ →";
+
+    }
+}
+
+
+/* =========================================================
+   判斷答案
+========================================================= */
+
+function chooseAnswer(
+    selectedText,
+    selectedButton
+) {
+
+    if (answered) return;
+
+
+    answered = true;
+
+
+    const q =
+        questionData[currentQuestion];
+
+
+    const allButtons =
+        document.querySelectorAll(
+            ".option"
+        );
+
+
+    allButtons.forEach(button => {
+
+        button.classList.add(
+            "disabled"
+        );
+
+    });
+
+
+    /*
+       直接比較文字內容，
+       不再依賴 A/B/C/D。
+       因此選項怎麼洗牌都不會出錯。
+    */
+
+    const isCorrect =
+        selectedText ===
+        q.answerText;
+
+
+    const feedback =
+        document.getElementById(
+            "feedback"
+        );
+
+
+    if (isCorrect) {
+
+        score += 10;
+
+
+        document.getElementById(
+            "score"
+        ).textContent =
+            score;
+
+
+        selectedButton.classList.add(
+            "correct"
+        );
+
+
+        feedback.className =
+            "feedback good show";
+
+
+        feedback.innerHTML =
+            "🎉 <strong>正解です！</strong><br>" +
+            q.explanation;
+
+
+        playSound("correct");
+
+
+        createParticles(
+            selectedButton
+        );
+
+    }
+
+    else {
+
+        lives--;
+
+
+        updateLives();
+
+
+        selectedButton.classList.add(
+            "wrong"
+        );
+
+
+        /*
+           將真正答案標綠色。
+        */
+
+        allButtons.forEach(
+            button => {
+
+                if (
+                    button.textContent
+                        .substring(3)
+                        .trim() ===
+                    q.answerText
+                ) {
+
+                    button.classList.add(
+                        "correct"
+                    );
+
+                }
+
+            }
+        );
+
+
+        feedback.className =
+            "feedback bad show";
+
+
+        feedback.innerHTML =
+            "💡 <strong>惜しいです！</strong><br>" +
+            q.explanation;
+
+
+        mistakes.push({
+
+            question:
+                q.question,
+
+            answer:
+                q.answerText
+
+        });
+
+
+        playSound("wrong");
+    }
+
+
+    document.getElementById(
+        "nextBtn"
+    ).classList.add("show");
+}
+
+
+/* =========================================================
+   生命值
+========================================================= */
+
+function updateLives() {
+
+    let text = "";
+
+    for (
+        let i = 0;
+        i < 3;
+        i++
+    ) {
+
+        if (i < lives) {
+
+            text += "❤️";
+
+        } else {
+
+            text += "🖤";
+
+        }
+
+    }
+
+
+    document.getElementById(
+        "hearts"
+    ).textContent =
+        text;
+}
+
+
+/* =========================================================
+   下一題
+========================================================= */
+
+function nextQuestion() {
+
+    if (
+        currentQuestion <
+        questionData.length - 1
+    ) {
+
+        currentQuestion++;
+
+        loadQuestion();
+
+    } else {
+
+        finishGame();
+
+    }
+}
+
+
+/* =========================================================
+   結束遊戲
+========================================================= */
+
+function finishGame() {
+
+    document.getElementById(
+        "finalScore"
+    ).textContent =
+        score;
+
+
+    const result =
+        document.getElementById(
+            "resultMessage"
+        );
+
+
+    if (score === 80) {
+
+        result.innerHTML =
+            "🌟 <strong>パーフェクト！</strong><br>" +
+            "すばらしい日本語ガイドです！";
+
+    }
+
+    else if (score >= 60) {
+
+        result.innerHTML =
+            "👏 <strong>よくできました！</strong><br>" +
+            "台湾の観光を日本語で紹介できますね。";
+
+    }
+
+    else if (score >= 40) {
+
+        result.innerHTML =
+            "😊 <strong>いいですね！</strong><br>" +
+            "もう一度遊んで、日本語をもっと覚えましょう。";
+
+    }
+
+    else {
+
+        result.innerHTML =
+            "🌱 <strong>もう一度挑戦しましょう！</strong><br>" +
+            "復習してから再チャレンジしてみましょう。";
+
+    }
+
+
+    const reviewList =
+        document.getElementById(
+            "reviewList"
+        );
+
+
+    reviewList.innerHTML = "";
+
+
+    if (mistakes.length === 0) {
+
+        reviewList.innerHTML =
+            "<div class='review-item'>" +
+            "🎉 全問正解です！すばらしい！" +
+            "</div>";
+
+    }
+
+    else {
+
+        mistakes.forEach(
+            (item, index) => {
+
+                const div =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                div.className =
+                    "review-item";
+
+
+                div.innerHTML =
+                    "<strong>" +
+                    (index + 1) +
+                    ". " +
+                    item.question +
+                    "</strong><br>" +
+                    "正解：<span class='gold'>" +
+                    item.answer +
+                    "</span>";
+
+
+                reviewList.appendChild(
+                    div
+                );
+
+            }
+        );
+
+    }
+
+
+    document.getElementById(
+        "progress"
+    ).style.width =
+        "100%";
+
+
+    showScreen("endScreen");
+
+    playSound("correct");
+}
+
+
+/* =========================================================
+   粒子動畫
+========================================================= */
+
+function createParticles(element) {
+
+    const rect =
+        element.getBoundingClientRect();
+
+
+    for (
+        let i = 0;
+        i < 20;
+        i++
+    ) {
+
+        const particle =
+            document.createElement(
+                "div"
+            );
+
+
+        particle.className =
+            "particle";
+
+
+        particle.style.left =
+            (
+                rect.left +
+                rect.width / 2
+            ) + "px";
+
+
+        particle.style.top =
+            (
+                rect.top +
+                rect.height / 2
+            ) + "px";
+
+
+        const x =
+            (
+                Math.random() -
+                .5
+            ) * 190;
+
+
+        const y =
+            (
+                Math.random() -
+                .5
+            ) * 190;
+
+
+        particle.style.setProperty(
+            "--x",
+            x + "px"
+        );
+
+
+        particle.style.setProperty(
+            "--y",
+            y + "px"
+        );
+
+
+        document.body.appendChild(
+            particle
+        );
+
+
+        setTimeout(
+            () => {
+                particle.remove();
+            },
+            950
+        );
+
+    }
+}
+
+
+/* =========================================================
+   音效
+========================================================= */
+
+let audioContext = null;
+
+
+function initAudio() {
+
+    try {
+
+        if (!audioContext) {
+
+            audioContext =
+                new (
+                    window.AudioContext ||
+                    window.webkitAudioContext
+                )();
+
+        }
+
+
+        if (
+            audioContext.state ===
+            "suspended"
+        ) {
+
+            audioContext.resume();
+
+        }
+
+    } catch (e) {
+
+        console.log(
+            "Audio unavailable"
+        );
+
+    }
+}
+
+
+function playSound(type) {
+
+    if (!audioContext) return;
+
+
+    const oscillator =
+        audioContext.createOscillator();
+
+
+    const gain =
+        audioContext.createGain();
+
+
+    oscillator.connect(gain);
+
+    gain.connect(
+        audioContext.destination
+    );
+
+
+    if (type === "correct") {
+
+        oscillator.frequency.setValueAtTime(
+            523,
+            audioContext.currentTime
+        );
+
+        oscillator.frequency.exponentialRampToValueAtTime(
+            784,
+            audioContext.currentTime + .15
+        );
+
+    }
+
+    else {
+
+        oscillator.frequency.setValueAtTime(
+            190,
+            audioContext.currentTime
+        );
+
+        oscillator.frequency.exponentialRampToValueAtTime(
+            90,
+            audioContext.currentTime + .22
+        );
+
+    }
+
+
+    gain.gain.setValueAtTime(
+        .001,
+        audioContext.currentTime
+    );
+
+
+    gain.gain.exponentialRampToValueAtTime(
+        .13,
+        audioContext.currentTime + .02
+    );
+
+
+    gain.gain.exponentialRampToValueAtTime(
+        .001,
+        audioContext.currentTime + .25
+    );
+
+
+    oscillator.start();
+
+
+    oscillator.stop(
+        audioContext.currentTime + .3
+    );
+}
+
+
+/* =========================================================
+   第一次觸控啟用手機音效
+========================================================= */
+
+document.addEventListener(
+    "touchstart",
+    function() {
+
+        initAudio();
+
+    },
+    {
+        once: true
+    }
+);
+
+</script>
+
+</body>
+</html>
